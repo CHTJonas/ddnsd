@@ -26,12 +26,13 @@ func main() {
 		err := r.ParseForm()
 		if err != nil {
 			respondWithError(w, "500 Internal Server Error", http.StatusInternalServerError)
-			fmt.Println(err)
+			// TODO logging
 			return
 		}
 		err = updateResourceRecord(r.Username, r.Form.Get("contents"))
 		if err != nil {
 			respondWithError(w, "500 Internal Server Error", http.StatusInternalServerError)
+			// TODO logging
 			return
 		}
 		respondWithError(w, "202 Accepted", http.StatusAccepted)
