@@ -2,7 +2,7 @@
 
 This repo hosts the code for a small dynamic DNS daemon (ddnsd) that I use to setup `_acme-challenge` records when issuing [Let's Encrypt](https://letsencrypt.org/) records for some of my personal infrastructure. It's written in Go and designed to be as small and as simple as possible. Host machines poke ddnsd over HTTP by making a POST request to an API endpoint during a [dehydrated](https://github.com/dehydrated-io/dehydrated) hook step. HTTP Basic authentication is used with credentials stored in a .htpasswd file. The username dictates which record to update which makes sure that API credentials can't be shared.
 
-## Usage
+## Example
 
 Imagine your `.htpasswd` file contains the line `test1.domain.tld.:$2y$05$DKfxz32xyO3giwz0eV1Qi.et.DL2AokHFxjYk1j78Vb7kPJCcmsyi` and that your zonefile has the following contents:
 
@@ -25,6 +25,19 @@ test3.domain.tld. 60 IN TXT test3
 ```
 
 Obviously you should substitute `server.domain.tld:8080` for the actual hostname and port that you are using. Make sure that you put ddnsd behind a reverse proxy which handles TLS!
+
+## Usage
+
+```
+Usage:
+  ddnsd [flags]
+
+Flags:
+  -b, --bind string     address and port to bind to (default "localhost:8080")
+  -h, --help            help for ddnsd
+  -p, --passwd string   path to .htpasswd file (default ".htpasswd")
+  -z, --zone string     path to DNS zonefile (default "ddns.zone")
+```
 
 ## Installation
 

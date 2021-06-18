@@ -11,43 +11,62 @@ import (
 	auth "github.com/abbot/go-http-auth"
 	zonefile "github.com/bwesterb/go-zonefile"
 	"github.com/gorilla/mux"
+	"github.com/spf13/cobra"
 )
 
-const (
-	authfilePath = ".htpasswd"
-	zonefilePath = "test.zone"
+var (
+	bindAddr     string
+	authfilePath string
+	zonefilePath string
 )
+
+var command = &cobra.Command{
+	Use:   "ddnsd",
+	Short: "Dynamic DNS Daemon",
+	Run: func(cmd *cobra.Command, args []string) {
+		provider := auth.HtpasswdFileProvider(authfilePath)
+		authenticator := auth.NewBasicAuthenticator("ddnsd", provider)
+		r := mux.NewRouter()
+		r.Path("/update").Methods("POST").Handler(authenticator.Wrap(func(w http.ResponseWriter, r *auth.AuthenticatedRequest) {
+			err := r.ParseForm()
+			if err != nil {
+				respondWithError(w, "500 Internal Server Error", http.StatusInternalServerError)
+				// TODO logging
+				return
+			}
+			err = updateResourceRecord(r.Username, r.Form.Get("contents"))
+			if err != nil {
+				respondWithError(w, "500 Internal Server Error", http.StatusInternalServerError)
+				// TODO logging
+				return
+			}
+			respondWithError(w, "202 Accepted", http.StatusAccepted)
+		}))
+		r.Path("/update").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			respondWithError(w, "405 Method Not Allowed", http.StatusMethodNotAllowed)
+		})
+		r.MatcherFunc(alwaysMatch).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			respondWithError(w, "404 Not Found", http.StatusNotFound)
+		})
+		srv := &http.Server{
+			Handler: r,
+			Addr:    bindAddr,
+		}
+		srv.ListenAndServe()
+	},
+}
 
 func main() {
-	provider := auth.HtpasswdFileProvider(authfilePath)
-	authenticator := auth.NewBasicAuthenticator("ddnsd", provider)
-	r := mux.NewRouter()
-	r.Path("/update").Methods("POST").Handler(authenticator.Wrap(func(w http.ResponseWriter, r *auth.AuthenticatedRequest) {
-		err := r.ParseForm()
-		if err != nil {
-			respondWithError(w, "500 Internal Server Error", http.StatusInternalServerError)
-			// TODO logging
-			return
-		}
-		err = updateResourceRecord(r.Username, r.Form.Get("contents"))
-		if err != nil {
-			respondWithError(w, "500 Internal Server Error", http.StatusInternalServerError)
-			// TODO logging
-			return
-		}
-		respondWithError(w, "202 Accepted", http.StatusAccepted)
-	}))
-	r.Path("/update").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		respondWithError(w, "405 Method Not Allowed", http.StatusMethodNotAllowed)
-	})
-	r.MatcherFunc(alwaysMatch).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		respondWithError(w, "404 Not Found", http.StatusNotFound)
-	})
-	srv := &http.Server{
-		Handler: r,
-		Addr:    ":8080",
+	if err := command.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
-	srv.ListenAndServe()
+}
+
+func init() {
+	command.Flags().StringVarP(&bindAddr, "bind", "b", "localhost:8080", "address and port to bind to")
+	command.Flags().StringVarP(&authfilePath, "passwd", "p", ".htpasswd", "path to .htpasswd file")
+	command.Flags().StringVarP(&zonefilePath, "zone", "z", "ddns.zone", "path to DNS zonefile")
 }
 
 func alwaysMatch(_ *http.Request, _ *mux.RouteMatch) bool {
