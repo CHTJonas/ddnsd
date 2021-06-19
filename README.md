@@ -1,6 +1,8 @@
 # Dynamic DNS Daemon
 
-This repo hosts the code for a small dynamic DNS daemon (ddnsd) that I use to setup `_acme-challenge` records when issuing [Let's Encrypt](https://letsencrypt.org/) records for some of my personal infrastructure. It's written in Go and designed to be as small and as simple as possible. Host machines poke ddnsd over HTTP by making a POST request to an API endpoint during a [dehydrated](https://github.com/dehydrated-io/dehydrated) hook step. HTTP Basic authentication is used with credentials stored in a .htpasswd file. The username dictates which record to update which makes sure that API credentials can't be shared.
+This repo hosts the code for a small dynamic DNS daemon (ddnsd) that I use to setup `_acme-challenge` records when issuing [Let's Encrypt](https://letsencrypt.org/) records for some of my personal infrastructure. It's written in Go and designed to be as small and as simple as possible. It is **not** a full DNS server, rather it parses DNS zonefiles and updates them. To serve your DNS zone you will need a full authoritative server; I use [knot](https://www.knot-dns.cz).
+
+Host machines poke ddnsd over HTTP by making a POST request to an API endpoint during a [dehydrated](https://github.com/dehydrated-io/dehydrated) hook step. HTTP Basic authentication is used with credentials stored in a `.htpasswd` file. The username dictates the record to update which makes sure that API credentials can't be shared.
 
 ## Example
 
