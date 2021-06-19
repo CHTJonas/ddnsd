@@ -43,7 +43,13 @@ Flags:
 
 ## Installation
 
-TODO
+Pre-built binaries for a variety of operating systems and architectures are available to download from [GitHub Releases](https://github.com/CHTJonas/ddnsd/releases). If you wish to compile from source then you will need a suitable [Go toolchain installed](https://golang.org/doc/install). After that just clone the project using Git and run Make! Cross-compilation is easy in Go so by default we build for all targets and place the resulting executables in `./bin`:
+
+```bash
+git clone https://github.com/CHTJonas/ddnsd.git
+cd ddnsd
+make clean && make all
+```
 
 ## Copyright
 
