@@ -14,6 +14,7 @@ import (
 
 	auth "github.com/abbot/go-http-auth"
 	zonefile "github.com/bwesterb/go-zonefile"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 )
@@ -52,6 +53,9 @@ var command = &cobra.Command{
 		r.MatcherFunc(alwaysMatch).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			respondWithError(w, "404 Not Found", http.StatusNotFound)
 		})
+		r.Use(serverHeaderMiddleware)
+		r.Use(proxyMiddleware)
+		r.Use(loggingMiddleware)
 		srv := &http.Server{
 			Handler: r,
 			Addr:    bindAddr,
@@ -92,6 +96,25 @@ func init() {
 	command.Flags().StringVarP(&bindAddr, "bind", "b", "localhost:8080", "address and port to bind to")
 	command.Flags().StringVarP(&authfilePath, "passwd", "p", ".htpasswd", "path to .htpasswd file")
 	command.Flags().StringVarP(&zonefilePath, "zone", "z", "ddns.zone", "path to DNS zonefile")
+}
+
+func serverHeaderMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Server", "https://github.com/CHTJonas/ddnsd")
+		next.ServeHTTP(w, r)
+	})
+}
+
+func proxyMiddleware(next http.Handler) http.Handler {
+	return handlers.ProxyHeaders(next)
+}
+
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		httpAction := fmt.Sprintf("\"%s %s %s\"", r.Method, r.URL.Path, r.Proto)
+		fmt.Println(r.RemoteAddr, httpAction)
+		next.ServeHTTP(w, r)
+	})
 }
 
 func alwaysMatch(_ *http.Request, _ *mux.RouteMatch) bool {
