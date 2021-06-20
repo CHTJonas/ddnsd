@@ -2,11 +2,15 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	auth "github.com/abbot/go-http-auth"
 	zonefile "github.com/bwesterb/go-zonefile"
@@ -52,14 +56,35 @@ var command = &cobra.Command{
 			Handler: r,
 			Addr:    bindAddr,
 		}
-		srv.ListenAndServe()
+		fmt.Println("Starting server...")
+		go func() {
+			if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		}()
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, syscall.SIGINT)
+		signal.Notify(c, syscall.SIGQUIT)
+		signal.Notify(c, syscall.SIGTERM)
+		<-c
+		fmt.Println("Received shutdown signal!")
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		fmt.Println("Waiting for server to exit...")
+		if err := srv.Shutdown(ctx); err != nil {
+			fmt.Println("Shutdown error:", err.Error())
+			os.Exit(1)
+		}
+		fmt.Println("Bye-bye!")
+		os.Exit(0)
 	},
 }
 
 func main() {
 	if err := command.Execute(); err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		os.Exit(125)
 	}
 }
 
