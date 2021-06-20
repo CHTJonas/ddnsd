@@ -25,13 +25,13 @@ var command = &cobra.Command{
 			err := r.ParseForm()
 			if err != nil {
 				respondWithError(w, "500 Internal Server Error", http.StatusInternalServerError)
-				// TODO logging
+				fmt.Println("Error:", err)
 				return
 			}
 			err = updateResourceRecord(r.Username, r.Form.Get("contents"))
 			if err != nil {
 				respondWithError(w, "500 Internal Server Error", http.StatusInternalServerError)
-				// TODO logging
+				fmt.Println("Error:", err)
 				return
 			}
 			respondWithError(w, "202 Accepted", http.StatusAccepted)
