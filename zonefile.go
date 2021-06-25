@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
+	"os/exec"
 
 	zonefile "github.com/bwesterb/go-zonefile"
 )
@@ -43,4 +44,10 @@ func updateResourceRecord(username, contents string) error {
 	}
 
 	return errors.New("could not find resource record in zonefile")
+}
+
+func callHook(path string) error {
+	cmd := exec.Command(path)
+	_, err := cmd.Output()
+	return err
 }

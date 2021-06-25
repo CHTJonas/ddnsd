@@ -31,8 +31,16 @@ var command = &cobra.Command{
 			err = updateResourceRecord(r.Username, r.Form.Get("contents"))
 			if err != nil {
 				respondWithError(w, "500 Internal Server Error", http.StatusInternalServerError)
-				fmt.Println("Error:", err)
+				fmt.Println("Error updating zonefile:", err)
 				return
+			}
+			if hookPath != "" {
+				err = callHook(hookPath)
+				if err != nil {
+					respondWithError(w, "500 Internal Server Error", http.StatusInternalServerError)
+					fmt.Println("Error calling hook:", err)
+					return
+				}
 			}
 			respondWithError(w, "202 Accepted", http.StatusAccepted)
 		}))

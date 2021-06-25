@@ -12,12 +12,14 @@ var (
 	bindAddr     string
 	authfilePath string
 	zonefilePath string
+	hookPath     string
 )
 
 func init() {
 	command.Flags().StringVarP(&bindAddr, "bind", "b", "localhost:8080", "address and port to bind to")
 	command.Flags().StringVarP(&authfilePath, "passwd", "p", ".htpasswd", "path to .htpasswd file")
 	command.Flags().StringVarP(&zonefilePath, "zone", "z", "ddns.zone", "path to DNS zonefile")
+	command.Flags().StringVarP(&hookPath, "hook", "H", "", "full path to command/script to run after updating zonefile")
 }
 
 func main() {

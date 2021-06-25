@@ -16,4 +16,5 @@ bin/
 
 # Config files
 .htpasswd
-*.zone
+ddns.zone
+hook.sh

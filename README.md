@@ -37,6 +37,7 @@ Usage:
 Flags:
   -b, --bind string     address and port to bind to (default "localhost:8080")
   -h, --help            help for ddnsd
+  -H, --hook string     full path to command/script to run after updating zonefile
   -p, --passwd string   path to .htpasswd file (default ".htpasswd")
   -z, --zone string     path to DNS zonefile (default "ddns.zone")
 ```
