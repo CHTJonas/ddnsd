@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 
@@ -11,8 +11,15 @@ import (
 )
 
 func updateResourceRecord(username, contents string) error {
+	// Open zonefile
+	f, err := os.OpenFile(zonefilePath, os.O_RDWR, 0)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
 	// Load zonefile
-	data, err := ioutil.ReadFile(zonefilePath)
+	data, err := io.ReadAll(f)
 	if err != nil {
 		return err
 	}
@@ -23,24 +30,31 @@ func updateResourceRecord(username, contents string) error {
 		return err
 	}
 
-	// Update RR
 	for _, e := range zf.Entries() {
+		// Find RR
 		if !bytes.Equal(e.Domain(), []byte(username)) {
 			continue
 		}
+
+		// Check RR
 		if !bytes.Equal(e.Type(), []byte("TXT")) {
 			return errors.New("resource record type in zonefile is not TXT")
 		}
+
+		// Update RR
 		e.SetValue(0, []byte(contents))
-		fh, err := os.OpenFile(zonefilePath, os.O_WRONLY, 0)
+
+		// Write zonefile
+		err = f.Truncate(0)
 		if err != nil {
 			return err
 		}
-		_, err = fh.Write(zf.Save())
+		_, err = f.Seek(0, 0)
 		if err != nil {
 			return err
 		}
-		return nil
+		_, err = f.Write(zf.Save())
+		return err
 	}
 
 	return errors.New("could not find resource record in zonefile")
