@@ -21,6 +21,9 @@ var command = &cobra.Command{
 		provider := auth.HtpasswdFileProvider(authfilePath)
 		authenticator := auth.NewBasicAuthenticator("ddnsd", provider)
 		r := mux.NewRouter()
+		r.Path("/ping").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintln(w, "pong")
+		})
 		r.Path("/update").Methods("POST").Handler(authenticator.Wrap(func(w http.ResponseWriter, r *auth.AuthenticatedRequest) {
 			err := r.ParseForm()
 			if err != nil {
