@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/handlers"
@@ -33,6 +34,6 @@ func loggingMiddleware(next http.Handler) http.Handler {
 		lrw := &loggingResponseWriter{w, http.StatusOK}
 		next.ServeHTTP(lrw, r)
 		httpAction := fmt.Sprintf("\"%s %s %s\"", r.Method, r.URL.Path, r.Proto)
-		fmt.Println(r.RemoteAddr, httpAction, lrw.statusCode)
+		log.Println(r.RemoteAddr, httpAction, lrw.statusCode)
 	})
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -31,20 +32,20 @@ var command = &cobra.Command{
 			err := r.ParseForm()
 			if err != nil {
 				respondWithError(w, "500 Internal Server Error", http.StatusInternalServerError)
-				fmt.Println("Error:", err)
+				log.Println("Error:", err)
 				return
 			}
 			err = updateResourceRecord(r.Username, r.Form.Get("contents"))
 			if err != nil {
 				respondWithError(w, "500 Internal Server Error", http.StatusInternalServerError)
-				fmt.Println("Error updating zonefile:", err)
+				log.Println("Error updating zonefile:", err)
 				return
 			}
 			if hookPath != "" {
 				err = callHook(hookPath)
 				if err != nil {
 					respondWithError(w, "500 Internal Server Error", http.StatusInternalServerError)
-					fmt.Println("Error calling hook:", err)
+					log.Println("Error calling hook:", err)
 					return
 				}
 			}
@@ -63,11 +64,10 @@ var command = &cobra.Command{
 			Handler: r,
 			Addr:    bindAddr,
 		}
-		fmt.Println("Starting server...")
+		log.Println("Starting server...")
 		go func() {
 			if err := srv.ListenAndServe(); err != http.ErrServerClosed {
-				fmt.Println(err)
-				os.Exit(1)
+				log.Fatalln(err)
 			}
 		}()
 		c := make(chan os.Signal, 1)
@@ -75,15 +75,14 @@ var command = &cobra.Command{
 		signal.Notify(c, syscall.SIGQUIT)
 		signal.Notify(c, syscall.SIGTERM)
 		<-c
-		fmt.Println("Received shutdown signal!")
+		log.Println("Received shutdown signal!")
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		fmt.Println("Waiting for server to exit...")
+		log.Println("Waiting for server to exit...")
 		if err := srv.Shutdown(ctx); err != nil {
-			fmt.Println("Shutdown error:", err.Error())
-			os.Exit(1)
+			log.Fatalln("Shutdown error:", err.Error())
 		}
-		fmt.Println("Bye-bye!")
+		log.Println("Bye-bye!")
 		os.Exit(0)
 	},
 }
