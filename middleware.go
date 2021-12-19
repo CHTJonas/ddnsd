@@ -42,7 +42,7 @@ func loggingMiddleware(next http.Handler) http.Handler {
 
 func serverHeaderMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Server", "https://github.com/CHTJonas/ddnsd")
+		w.Header().Set("X-Powered-By", "https://github.com/CHTJonas/ddnsd")
 		next.ServeHTTP(w, r)
 	})
 }
