@@ -18,17 +18,6 @@ func (lrw *loggingResponseWriter) WriteHeader(code int) {
 	lrw.ResponseWriter.WriteHeader(code)
 }
 
-func serverHeaderMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Server", "https://github.com/CHTJonas/ddnsd")
-		next.ServeHTTP(w, r)
-	})
-}
-
-func proxyMiddleware(next http.Handler) http.Handler {
-	return handlers.ProxyHeaders(next)
-}
-
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		lrw := &loggingResponseWriter{w, http.StatusOK}
@@ -44,4 +33,15 @@ func loggingMiddleware(next http.Handler) http.Handler {
 		}
 		log.Println(r.RemoteAddr, httpInfo, lrw.statusCode, refererInfo, uaInfo)
 	})
+}
+
+func serverHeaderMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Server", "https://github.com/CHTJonas/ddnsd")
+		next.ServeHTTP(w, r)
+	})
+}
+
+func proxyMiddleware(next http.Handler) http.Handler {
+	return handlers.ProxyHeaders(next)
 }
