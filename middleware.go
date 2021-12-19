@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 
 	"github.com/gorilla/handlers"
@@ -22,6 +23,10 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		lrw := &loggingResponseWriter{w, http.StatusOK}
 		next.ServeHTTP(lrw, r)
+		addr, _, err := net.SplitHostPort(r.RemoteAddr)
+		if err != nil {
+			addr = r.RemoteAddr
+		}
 		httpInfo := fmt.Sprintf("\"%s %s %s\"", r.Method, r.URL.Path, r.Proto)
 		refererInfo := fmt.Sprintf("\"%s\"", r.Referer())
 		if refererInfo == "\"\"" {
@@ -31,7 +36,7 @@ func loggingMiddleware(next http.Handler) http.Handler {
 		if uaInfo == "\"\"" {
 			uaInfo = "\"-\""
 		}
-		log.Println(r.RemoteAddr, httpInfo, lrw.statusCode, refererInfo, uaInfo)
+		log.Println(addr, httpInfo, lrw.statusCode, refererInfo, uaInfo)
 	})
 }
 
