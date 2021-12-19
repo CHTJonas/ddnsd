@@ -33,7 +33,15 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		lrw := &loggingResponseWriter{w, http.StatusOK}
 		next.ServeHTTP(lrw, r)
-		httpAction := fmt.Sprintf("\"%s %s %s\"", r.Method, r.URL.Path, r.Proto)
-		log.Println(r.RemoteAddr, httpAction, lrw.statusCode)
+		httpInfo := fmt.Sprintf("\"%s %s %s\"", r.Method, r.URL.Path, r.Proto)
+		refererInfo := fmt.Sprintf("\"%s\"", r.Referer())
+		if refererInfo == "\"\"" {
+			refererInfo = "\"-\""
+		}
+		uaInfo := fmt.Sprintf("\"%s\"", r.UserAgent())
+		if uaInfo == "\"\"" {
+			uaInfo = "\"-\""
+		}
+		log.Println(r.RemoteAddr, httpInfo, lrw.statusCode, refererInfo, uaInfo)
 	})
 }
