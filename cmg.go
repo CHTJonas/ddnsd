@@ -15,10 +15,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var version = "dev-edge"
+
 var command = &cobra.Command{
 	Use:   "ddnsd",
 	Short: "Dynamic DNS Daemon",
 	Run: func(cmd *cobra.Command, args []string) {
+		log.Println("ddnsd version", version)
 		provider := auth.HtpasswdFileProvider(authfilePath)
 		authenticator := auth.NewBasicAuthenticator("ddnsd", provider)
 		r := mux.NewRouter()
@@ -67,9 +70,10 @@ var command = &cobra.Command{
 		log.Println("Starting server...")
 		go func() {
 			if err := srv.ListenAndServe(); err != http.ErrServerClosed {
-				log.Fatalln(err)
+				log.Println("Startup error:", err.Error())
 			}
 		}()
+		log.Println("Listening on", bindAddr)
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, syscall.SIGINT)
 		signal.Notify(c, syscall.SIGQUIT)
