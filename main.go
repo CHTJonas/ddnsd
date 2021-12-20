@@ -34,7 +34,7 @@ func initConfig() {
 func main() {
 	if err := command.Execute(); err != nil {
 		log.Println(err)
-		os.Exit(125)
+		os.Exit(1)
 	}
 }
 

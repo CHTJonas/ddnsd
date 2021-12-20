@@ -70,7 +70,7 @@ var command = &cobra.Command{
 		log.Println("Starting server...")
 		go func() {
 			if err := srv.ListenAndServe(); err != http.ErrServerClosed {
-				log.Println("Startup error:", err.Error())
+				log.Fatalln("Startup error:", err.Error())
 			}
 		}()
 		log.Println("Listening on", bindAddr)
