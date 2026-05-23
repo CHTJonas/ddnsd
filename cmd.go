@@ -27,10 +27,6 @@ var command = &cobra.Command{
 		provider := auth.HtpasswdFileProvider(authfilePath)
 		authenticator := auth.NewBasicAuthenticator("ddnsd", provider)
 		r := mux.NewRouter()
-		r.Path("/robots.txt").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, "User-agent: *")
-			fmt.Fprintln(w, "Disallow: /")
-		})
 		r.Path("/ping").Methods("GET").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintln(w, "pong")
 		})
