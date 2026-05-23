@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var m sync.Mutex
 var version = "dev-edge"
 
 var command = &cobra.Command{
@@ -36,6 +38,8 @@ var command = &cobra.Command{
 			respondWithError(w, "405 Method Not Allowed", http.StatusMethodNotAllowed)
 		})
 		r.Path("/update").Methods("POST").Handler(authenticator.Wrap(func(w http.ResponseWriter, r *auth.AuthenticatedRequest) {
+			m.Lock()
+			defer m.Unlock()
 			err := r.ParseForm()
 			if err != nil {
 				respondWithError(w, "500 Internal Server Error", http.StatusInternalServerError)
