@@ -5,6 +5,8 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"runtime"
+	"strings"
 
 	"github.com/gorilla/handlers"
 )
@@ -41,8 +43,10 @@ func loggingMiddleware(next http.Handler) http.Handler {
 }
 
 func serverHeaderMiddleware(next http.Handler) http.Handler {
+	pwrBy := fmt.Sprintf("ddnsd/%s Go/%s (+https://github.com/CHTJonas/ddnsd)",
+		version, strings.TrimPrefix(runtime.Version(), "go"))
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("X-Powered-By", "https://github.com/CHTJonas/ddnsd")
+		w.Header().Set("X-Powered-By", pwrBy)
 		w.Header().Set("X-Robots-Tag", "noindex, nofollow")
 		next.ServeHTTP(w, r)
 	})
