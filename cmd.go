@@ -80,7 +80,6 @@ var command = &cobra.Command{
 		log.Println("Listening on", bindAddr)
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, syscall.SIGINT)
-		signal.Notify(c, syscall.SIGQUIT)
 		signal.Notify(c, syscall.SIGTERM)
 		<-c
 		log.Println("Received shutdown signal!")
