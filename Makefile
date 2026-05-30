@@ -9,7 +9,7 @@ GOFMT=$(GO) fmt
 GOTEST=$(GO) test $(GOOPTS)
 GOBUILD=$(GO) build $(GOOPTS)
 
-all: format build
+all: format build license
 
 clean:
 	@rm -rf bin
@@ -136,3 +136,10 @@ build/windows/amd64: dir mod
 build/windows: build/windows/386 build/windows/amd64
 
 build: build/linux build/freebsd build/openbsd build/darwin build/windows
+
+license: dir
+	cp NOTICE bin/NOTICE
+	cp LICENSE bin/LICENSE
+	go-licenses save . --ignore github.com/chtjonas/ddnsd --save_path bin/licenses
+	(cd bin/licenses && zip -r ../third-party-licenses.zip . -i **/LICENSE **/NOTICE **/COPYING)
+	rm -rf bin/licenses
