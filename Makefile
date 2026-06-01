@@ -3,28 +3,21 @@ SHELL := bash
 
 VER=$(shell git describe --tags --always --dirty)
 GO=$(shell which go)
-GOOPTS=-trimpath -mod=readonly -ldflags "-X main.version=$(VER) -s -w -buildid="
+GOOPTS=-trimpath -mod=readonly -ldflags "-X main.version=$(VER:v%=%) -s -w -buildid="
+GOINSTALL=$(GO) install
 GOMOD=$(GO) mod
 GOFMT=$(GO) fmt
-GOTEST=$(GO) test $(GOOPTS)
 GOBUILD=$(GO) build $(GOOPTS)
-
-all: format build license
-
-clean:
-	@rm -rf bin
 
 dir:
 	@if [ ! -d bin ]; then mkdir -p bin; fi
 
 mod:
 	@$(GOMOD) download
+	@$(GOINSTALL) github.com/google/go-licenses@latest
 
 format:
 	@$(GOFMT) ./...
-
-test:
-	$(GOTEST) -race -cover ./...
 
 build/linux/armv7: dir mod
 	export CGO_ENABLED=0
@@ -141,5 +134,10 @@ license: dir
 	cp NOTICE bin/NOTICE
 	cp LICENSE bin/LICENSE
 	go-licenses save . --ignore github.com/chtjonas/ddnsd --save_path bin/licenses
-	(cd bin/licenses && zip -r ../third-party-licenses.zip . -i **/LICENSE **/NOTICE **/COPYING)
+	(cd bin/licenses && zip -r ../third-party-licenses.zip . -i **/LICENSE **/LICENSE.* **/NOTICE **/NOTICE.* **/COPYING **/COPYING.*)
 	rm -rf bin/licenses
+
+clean:
+	@rm -rf bin
+
+all: format build license
