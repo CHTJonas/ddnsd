@@ -133,7 +133,7 @@ build: build/linux build/freebsd build/openbsd build/darwin build/windows
 license: dir
 	cp NOTICE bin/NOTICE
 	cp LICENSE bin/LICENSE
-	go-licenses save . --ignore github.com/chtjonas/ddnsd --save_path bin/licenses
+	go-licenses save . --ignore github.com/CHTJonas/ddnsd --save_path bin/licenses
 	(cd bin/licenses && zip -r ../third-party-licenses.zip . -i **/LICENSE **/LICENSE.* **/NOTICE **/NOTICE.* **/COPYING **/COPYING.*)
 	rm -rf bin/licenses
 

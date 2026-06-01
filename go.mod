@@ -1,4 +1,4 @@
-module github.com/chtjonas/ddnsd
+module github.com/CHTJonas/ddnsd
 
 go 1.16
 
